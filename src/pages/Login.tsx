@@ -63,6 +63,7 @@ export default function Login() {
         </form>
         )}
         <button className="btn w-full mt-3" onClick={useLocal}>Usar sem conta (dados só neste aparelho)</button>
+        {!clerkConfigured && <p className="text-[11px] text-center mt-2 text-miss">Login do Clerk não configurado neste site (falta a variável NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ou VITE_CLERK_PUBLISHABLE_KEY no build).</p>}
         <p className="text-xs text-muted text-center mt-3">Com conta, seus treinos são sincronizados entre aparelhos e ficam salvos na nuvem.</p>
       </div>
     </div>
