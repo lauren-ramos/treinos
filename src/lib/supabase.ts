@@ -1,13 +1,14 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
-const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
+const env = import.meta.env as Record<string, string | undefined>
+const url = env.VITE_SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL
+const key = env.VITE_SUPABASE_ANON_KEY ?? env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 
 /** Sem as variáveis de ambiente o app roda 100% local (dados no aparelho). */
 export const supaConfigured = Boolean(url && key && !url.includes('SEU-PROJETO'))
 
 /** Login pelo Clerk (mesmo padrão do Plano CIAAR): o token do Clerk vale como login no Supabase. */
-export const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined
+export const clerkKey = env.VITE_CLERK_PUBLISHABLE_KEY ?? env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 export const clerkConfigured = Boolean(clerkKey && !clerkKey.includes('SUA-CHAVE'))
 
 /** Ponte preenchida pelo provedor de login do Clerk (ver lib/auth.tsx). */

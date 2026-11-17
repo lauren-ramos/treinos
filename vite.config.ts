@@ -4,6 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  // aceita também NEXT_PUBLIC_* (nomes criados pelas integrações da Vercel com Clerk/Supabase); segredos sem prefixo nunca vão para o navegador
+  envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
   plugins: [
     react(),
     tailwindcss(),
