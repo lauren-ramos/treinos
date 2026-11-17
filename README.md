@@ -29,6 +29,12 @@ Sem configurar nada, o app funciona **100% local**: os dados ficam no aparelho (
 4. (Opcional) Para buscar a transcrição de vídeos do YouTube automaticamente:
    `supabase functions deploy youtube-transcript`. Sem isso, a transcrição é colada manualmente.
 
+### Login pelo Clerk (mesmo do Plano CIAAR)
+Opcional. Se `VITE_CLERK_PUBLISHABLE_KEY` estiver definida, o login é do Clerk e o token dele autentica o Supabase:
+1. Rode também `supabase/migrations/0002_clerk.sql` (troca `user_id` para texto e as regras de acesso para o id do Clerk).
+2. Clerk Dashboard → Integrations → Supabase → Activate. Supabase → Authentication → Third-Party Auth → Clerk (cole o domain).
+3. Coloque `VITE_CLERK_PUBLISHABLE_KEY` no `.env.local` (e na Vercel). Sem essa variável, vale o login nativo do Supabase (0001 apenas).
+
 ### Como a sincronização funciona
 - Tudo é gravado primeiro no aparelho; o envio é em segundo plano (ao voltar a conexão, ao abrir o app, ao
   voltar para a aba e a cada ~45 s).

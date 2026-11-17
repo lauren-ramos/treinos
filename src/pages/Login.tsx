@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { SignIn, SignUp } from '@clerk/react'
+import { clerkConfigured, supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { Field, Icon } from '../components/ui'
 
@@ -39,6 +40,17 @@ export default function Login() {
           <h1 className="text-3xl font-extrabold tracking-tight mt-4">Meu Treino</h1>
           <p className="text-muted text-sm mt-1">Planeje, treine e acompanhe sua evolução.</p>
         </div>
+        {clerkConfigured ? (
+          <div className="space-y-3">
+            <div className="seg w-full [&>button]:flex-1">
+              <button type="button" className={mode === 'in' ? 'on' : ''} onClick={() => setMode('in')}>Entrar</button>
+              <button type="button" className={mode === 'up' ? 'on' : ''} onClick={() => setMode('up')}>Criar conta</button>
+            </div>
+            {mode === 'in'
+              ? <SignIn routing="hash" appearance={{ elements: { rootBox: { width: '100%' }, cardBox: { width: '100%' } } }} />
+              : <SignUp routing="hash" appearance={{ elements: { rootBox: { width: '100%' }, cardBox: { width: '100%' } } }} />}
+          </div>
+        ) : (
         <form onSubmit={submit} className="card p-5 space-y-4">
           <div className="seg w-full [&>button]:flex-1">
             <button type="button" className={mode === 'in' ? 'on' : ''} onClick={() => setMode('in')}>Entrar</button>
@@ -49,6 +61,7 @@ export default function Login() {
           {msg && <p className={`text-sm font-semibold ${msg.err ? 'text-danger' : 'text-ok'}`} role="alert">{msg.t}</p>}
           <button className="btn btn-primary w-full" disabled={busy}>{busy ? 'Aguarde…' : mode === 'in' ? 'Entrar' : 'Criar conta'}</button>
         </form>
+        )}
         <button className="btn w-full mt-3" onClick={useLocal}>Usar sem conta (dados só neste aparelho)</button>
         <p className="text-xs text-muted text-center mt-3">Com conta, seus treinos são sincronizados entre aparelhos e ficam salvos na nuvem.</p>
       </div>

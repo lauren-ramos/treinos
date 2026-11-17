@@ -252,7 +252,7 @@ vi.mock('./supabase', () => {
       },
     }),
   }
-  return { supabase: client, supaConfigured: true }
+  return { supabase: client, supaConfigured: true, clerkConfigured: false, bridge: { userId: null, getToken: async () => null } }
 })
 
 describe('modo offline e sincronização', () => {

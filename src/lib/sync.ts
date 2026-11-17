@@ -9,7 +9,7 @@
 import { useSyncExternalStore } from 'react'
 import type { Table } from 'dexie'
 import { db, SYNC_TABLES, getMeta, setMeta, pendingCount, onLocalWrite, type SyncTable } from './db'
-import { supabase, supaConfigured } from './supabase'
+import { supabase, supaConfigured, clerkConfigured, bridge } from './supabase'
 import type { Row } from './types'
 
 export type SyncStatus = 'local' | 'online' | 'offline' | 'syncing' | 'error'
@@ -31,6 +31,7 @@ let timer: ReturnType<typeof setTimeout> | undefined
 
 async function userId(): Promise<string | null> {
   if (!supabase) return null
+  if (clerkConfigured) return bridge.userId
   const { data } = await supabase.auth.getSession()
   return data.session?.user.id ?? null
 }
@@ -133,6 +134,6 @@ export function startSync() {
   window.addEventListener('offline', () => void refreshPending().then(() => set({ status: supaConfigured ? 'offline' : 'local' })))
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void syncNow() })
   setInterval(() => { if (document.visibilityState === 'visible') void syncNow() }, 45000)
-  supabase?.auth.onAuthStateChange(() => void syncNow())
+  if (!clerkConfigured) supabase?.auth.onAuthStateChange(() => void syncNow())
   void syncNow()
 }

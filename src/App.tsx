@@ -1,4 +1,7 @@
-import { Suspense, lazy, useEffect } from 'react'
+import { Suspense, lazy, useEffect, type ReactNode } from 'react'
+import { ClerkProvider } from '@clerk/react'
+import { ptBR } from '@clerk/localizations'
+import { clerkConfigured, clerkKey } from './lib/supabase'
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import Layout from './components/Layout'
@@ -56,15 +59,26 @@ function Gate() {
   )
 }
 
+function Clerk({ children }: { children: ReactNode }) {
+  if (!clerkConfigured) return <>{children}</>
+  return (
+    <ClerkProvider publishableKey={clerkKey!} localization={ptBR} appearance={{ variables: { colorPrimary: '#e0529c', borderRadius: '0.75rem' } }}>
+      {children}
+    </ClerkProvider>
+  )
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <ToastProvider>
         <ConfirmProvider>
-          <AuthProvider>
-            <ThemeSync />
-            <Gate />
-          </AuthProvider>
+          <Clerk>
+            <AuthProvider>
+              <ThemeSync />
+              <Gate />
+            </AuthProvider>
+          </Clerk>
         </ConfirmProvider>
       </ToastProvider>
     </BrowserRouter>
