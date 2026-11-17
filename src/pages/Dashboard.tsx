@@ -74,10 +74,10 @@ export default function Dashboard() {
 
       {/* treino de hoje */}
       {d.active ? (
-        <div className="card p-5 bg-gradient-to-br from-accent to-[color-mix(in_srgb,var(--accent)_70%,#7c2d5b)] text-onaccent border-0">
+        <div className="card p-5 text-onaccent border-0" style={{ background: 'linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 62%, #7c2d5b))' }}>
           <div className="text-xs font-bold tracking-widest opacity-90">TREINO EM ANDAMENTO</div>
           <h2 className="text-2xl font-extrabold mt-1">{d.active.name}</h2>
-          <button className="btn w-full mt-4 !bg-white !text-accentink !border-0 !min-h-14 text-base" onClick={() => nav(`/treino/${d.active!.id}`)}><Icon n="play" />CONTINUAR TREINO</button>
+          <button className="btn w-full mt-4 !bg-white !text-[#a4246a] !border-0 !min-h-14 text-base" onClick={() => nav(`/treino/${d.active!.id}`)}><Icon n="play" />CONTINUAR TREINO</button>
         </div>
       ) : todays.length ? (
         todays.map((w) => {

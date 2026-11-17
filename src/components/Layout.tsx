@@ -69,7 +69,7 @@ export default function Layout() {
         </main>
       </div>
 
-      {active && !loc.pathname.startsWith('/treino/') && (
+      {active && loc.pathname !== '/' && !loc.pathname.startsWith('/treino/') && (
         <button onClick={() => nav(`/treino/${active.id}`)} className="fixed z-40 left-3 right-3 bottom-[76px] md:left-auto md:right-6 md:bottom-6 md:w-80 rounded-2xl bg-accent text-onaccent px-4 py-3 flex items-center gap-3 shadow-xl text-left" aria-label="Voltar ao treino em andamento">
           <Icon n={active.status === 'paused' ? 'pause' : 'play'} />
           <span className="flex-1 min-w-0"><b className="block text-sm leading-tight truncate">{active.name}</b><span className="text-xs opacity-90 tnum">{active.status === 'paused' ? 'Pausado' : 'Em andamento'} · {fmtDur(elapsedMs(active, now) / 1000)}</span></span>

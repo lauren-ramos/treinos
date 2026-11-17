@@ -168,11 +168,11 @@ export default function Run() {
             </div>
             <button className="btn btn-icon" onClick={() => setOrder(true)} aria-label="Ordem dos exercícios"><Icon n="list" /></button>
           </div>
-          <div className="flex items-center justify-between mt-2">
-            <div className={`text-[44px] leading-none font-extrabold tnum tracking-tight ${paused ? 'text-muted' : ''}`} aria-label="Tempo de treino" role="timer">{fmtDur(elapsed)}</div>
-            <div className="flex gap-2">
-              <button className="btn" onClick={() => (paused ? resumeSession(s.id) : pauseSession(s.id))}><Icon n={paused ? 'play' : 'pause'} />{paused ? 'Retomar' : 'Pausar'}</button>
-              <button className="btn btn-primary" onClick={() => setFinishAsk(true)}><Icon n="flag" />Finalizar</button>
+          <div className="flex items-center justify-between gap-2 mt-2">
+            <div className={`shrink-0 text-[34px] min-[400px]:text-[44px] leading-none font-extrabold tnum tracking-tight ${paused ? 'text-muted' : ''}`} aria-label="Tempo de treino" role="timer">{fmtDur(elapsed)}</div>
+            <div className="flex gap-2 min-w-0">
+              <button className="btn btn-sm !px-3 whitespace-nowrap" onClick={() => (paused ? resumeSession(s.id) : pauseSession(s.id))}><Icon n={paused ? 'play' : 'pause'} size={16} />{paused ? 'Retomar' : 'Pausar'}</button>
+              <button className="btn btn-sm btn-primary !px-3 whitespace-nowrap" onClick={() => setFinishAsk(true)}><Icon n="flag" size={16} />Finalizar</button>
             </div>
           </div>
           <div className="mt-2.5">

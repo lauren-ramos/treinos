@@ -1,10 +1,11 @@
 import { useEffect } from 'react'
-import { Icon } from './ui'
+import { Icon, useToast } from './ui'
 import { refreshPending, syncNow, useSyncState } from '../lib/sync'
 
 /** Indicador de conexão: online/sincronizado, offline, sincronizando ou erro (com pendências). */
 export function SyncBadge({ full }: { full?: boolean }) {
   const s = useSyncState()
+  const toast = useToast()
   useEffect(() => { void refreshPending() }, [])
   const map = {
     local: { icon: 'save', text: 'Salvo neste aparelho', sub: 'Modo local, sem conta', tone: 'text-muted bg-surface2' },
@@ -13,7 +14,10 @@ export function SyncBadge({ full }: { full?: boolean }) {
     syncing: { icon: 'sync', text: 'Sincronizando…', sub: 'Enviando alterações', tone: 'text-plan bg-[color-mix(in_srgb,var(--plan)_14%,transparent)]' },
     error: { icon: 'alert', text: 'Erro ao sincronizar', sub: s.pending ? `${s.pending} pendentes de envio` : 'Toque para tentar de novo', tone: 'text-danger bg-[color-mix(in_srgb,var(--danger)_14%,transparent)]' },
   }[s.status]
-  const click = () => { if (s.status !== 'local') void syncNow() }
+  const click = () => {
+    if (s.status === 'error' && s.error) toast(`Erro ao sincronizar: ${s.error}`, 'err')
+    if (s.status !== 'local') void syncNow()
+  }
   return (
     <button onClick={click} title={s.error ?? map.sub} aria-label={`${map.text}. ${map.sub}`} className={`inline-flex items-center gap-2 rounded-full ${map.tone} ${full ? 'w-full px-3 py-2.5 rounded-2xl text-left' : 'px-2.5 py-1.5'}`}>
       <Icon n={map.icon} size={16} className={s.status === 'syncing' ? 'animate-spin' : ''} />
