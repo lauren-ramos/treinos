@@ -13,7 +13,7 @@ import { LIB_BY_ID } from '../data/library'
 import { fmtClock, fmtDur } from '../lib/dates'
 import { beep, keepAwake, notify, unlockAudio, vibrate } from '../lib/notify'
 import { checkAchievements, type AchievementDef } from '../lib/stats'
-import { ExVisual, ExerciseDetail, ExercisePicker } from '../components/exercise'
+import { ExerciseDetail, ExercisePicker } from '../components/exercise'
 import { Icon, Modal, Spinner, useConfirm, useToast } from '../components/ui'
 import { SortableList } from '../components/Sortable'
 import type { Session, SessionExercise, SessionSet } from '../lib/types'
@@ -83,6 +83,7 @@ export default function Run() {
     unit: cur.unit, rest: cur.rest, difficulty: 'iniciante', location: ['academia', 'casa'], loadable: true, custom: true, demo: '', notes: '',
   }) : undefined
   const curSets = useMemo(() => sets.filter((x) => cur && x.session_exercise_id === cur.id), [sets, cur])
+  const nextSet = curSets.find((x) => !x.done)
 
   // referência da última execução
   useEffect(() => {
@@ -205,84 +206,89 @@ export default function Run() {
         )}
 
         {cur && curEx && (
-          <section className="card p-4 space-y-4" aria-label={`Exercício atual: ${cur.name}`}>
-            <ExVisual ex={curEx} />
-            <div className="flex items-start gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="h-eyebrow">{cur.status === 'done' ? 'Concluído' : cur.status === 'skipped' ? 'Pulado' : `Exercício ${idx + 1} de ${ex.length}`}</div>
-                <h2 className="text-2xl font-extrabold leading-7 tracking-tight">{cur.name}</h2>
-                <p className="text-sm text-muted mt-0.5">{cur.muscle_group} · meta {cur.target_sets} × {cur.target_reps}{cur.unit === 'seg' ? ' s' : ''} · descanso {cur.rest}s{cur.replaced_from ? ` · substitui ${cur.replaced_from}` : ''}</p>
-              </div>
-              <button className="btn btn-icon" onClick={() => setMenu(true)} aria-label="Opções do exercício"><Icon n="more" /></button>
-            </div>
-            <button className="btn btn-soft w-full" onClick={() => setDetail(curEx)}><Icon n="info" />Como fazer?</button>
-
-            {/* referência do último treino */}
-            <div className="rounded-2xl bg-surface2 p-3">
-              <div className="text-xs font-bold text-muted mb-1.5">Último treino</div>
-              {prev ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {prev.sets.map((p, i) => <span key={i} className="chip !bg-surface tnum">S{i + 1}: {kgFmt(p.load)} kg × {p.reps}</span>)}
+          <section className="space-y-3" aria-label={`Exercício atual: ${cur.name}`}>
+            <div className="card p-4">
+              <div className="flex items-start gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="h-eyebrow">{cur.status === 'done' ? 'Concluído' : cur.status === 'skipped' ? 'Pulado' : `Exercício ${idx + 1} de ${ex.length}`}{cur.group_id ? ' · série combinada' : ''}</div>
+                  <h2 className="text-[22px] font-extrabold leading-6 tracking-tight mt-0.5">{cur.name}</h2>
+                  <p className="text-[13px] text-muted mt-1">{cur.muscle_group} · meta {cur.target_sets} × {cur.target_reps}{cur.unit === 'seg' ? ' s' : ''} · descanso {cur.rest}s</p>
+                  {cur.replaced_from && <p className="text-xs text-muted mt-0.5">No lugar de {cur.replaced_from}</p>}
                 </div>
-              ) : <p className="text-sm text-muted">Primeira vez neste exercício: o que você registrar hoje será sua referência.</p>}
-              {comp.tone !== 'none' && (
-                <p className={`mt-2 text-sm font-bold flex items-start gap-1.5 ${comp.tone === 'up' ? 'text-ok' : comp.tone === 'down' ? 'text-miss' : comp.tone === 'mixed' ? 'text-plan' : 'text-muted'}`}>
-                  <Icon n={comp.tone === 'up' ? 'arrowUp' : comp.tone === 'down' ? 'arrowDown' : comp.tone === 'mixed' ? 'swap' : 'equal'} size={16} className="mt-0.5 shrink-0" />{comp.message}
-                </p>
-              )}
-            </div>
-
-            {/* séries */}
-            <div>
-              <div className="grid grid-cols-[34px_1fr_1fr_52px] gap-2 px-1 text-[11px] font-bold uppercase tracking-wide text-muted mb-1.5">
-                <span>Série</span><span className="text-center">{cur.unit === 'seg' ? 'Segundos' : 'Repetições'}</span><span className="text-center">Carga (kg)</span><span />
+                <button className="btn btn-icon -mr-1 -mt-1" onClick={() => setMenu(true)} aria-label="Opções do exercício"><Icon n="more" /></button>
               </div>
-              <div className="space-y-2">
-                {curSets.map((st, i) => {
-                  const arrow = compareSet(st.done ? { reps: st.reps ?? 0, load: st.load ?? 0 } : undefined, prev?.sets[i])
-                  const counting = count?.setId === st.id
-                  return (
-                    <div key={st.id} className={`grid grid-cols-[34px_1fr_1fr_52px] gap-2 items-center rounded-2xl p-1.5 transition ${st.done ? 'bg-[color-mix(in_srgb,var(--ok)_14%,transparent)]' : ''}`}>
-                      <b className="text-center text-muted tnum">{i + 1}</b>
-                      <NumInput value={st.reps} label={`Série ${i + 1}: ${cur.unit === 'seg' ? 'segundos' : 'repetições'}`} step="1" onCommit={(v) => updateSet(st.id, { reps: v === null ? null : Math.round(v) })} />
-                      <div className="relative">
-                        <NumInput value={st.load} label={`Série ${i + 1}: carga em quilos`} placeholder={prev?.sets[i] ? kgFmt(prev.sets[i].load) : '0'} onCommit={(v) => updateSet(st.id, { load: v })} />
-                        {st.done && arrow !== 'none' && <span className={`absolute -top-1.5 -right-1 rounded-full w-5 h-5 grid place-items-center text-white ${arrow === 'up' ? 'bg-ok' : arrow === 'down' ? 'bg-miss' : 'bg-none'}`} aria-label={arrow === 'up' ? 'Melhor que a última vez' : arrow === 'down' ? 'Abaixo da última vez' : 'Igual à última vez'}><Icon n={arrow === 'up' ? 'arrowUp' : arrow === 'down' ? 'arrowDown' : 'equal'} size={12} stroke={3} /></span>}
+              <button className="btn btn-soft btn-sm mt-3" onClick={() => setDetail(curEx)}><Icon n="info" size={15} />Como se faz?</button>
+              {cur.notes && <p className="mt-3 text-[13px] leading-snug rounded-xl bg-surface2 px-3 py-2 text-muted">{cur.notes}</p>}
+
+              {/* séries: repetições × carga, última vez e conclusão */}
+              <div className="mt-4">
+                <div className="grid grid-cols-[22px_1fr_1fr_60px_44px] gap-2 px-0.5 text-[10.5px] font-bold uppercase tracking-wide text-muted mb-1.5">
+                  <span className="text-center">#</span><span className="text-center">{cur.unit === 'seg' ? 'Seg' : 'Reps'}</span><span className="text-center">Carga (kg)</span><span className="text-center">Última</span><span />
+                </div>
+                <div className="space-y-1.5">
+                  {curSets.map((st, i) => {
+                    const arrow = compareSet(st.done ? { reps: st.reps ?? 0, load: st.load ?? 0 } : undefined, prev?.sets[i])
+                    const counting = count?.setId === st.id
+                    const p = prev?.sets[i]
+                    return (
+                      <div key={st.id} className={`grid grid-cols-[22px_1fr_1fr_60px_44px] gap-2 items-center rounded-2xl p-1 transition ${st.done ? 'bg-[color-mix(in_srgb,var(--ok)_14%,transparent)]' : ''}`}>
+                        <b className="text-center text-muted tnum text-sm">{i + 1}</b>
+                        <NumInput value={st.reps} label={`Série ${i + 1}: ${cur.unit === 'seg' ? 'segundos' : 'repetições'}`} step="1" onCommit={(v) => updateSet(st.id, { reps: v === null ? null : Math.round(v) })} />
+                        <NumInput value={st.load} label={`Série ${i + 1}: carga em quilos`} placeholder={p ? kgFmt(p.load) : '0'} onCommit={(v) => updateSet(st.id, { load: v })} />
+                        <div className="text-center leading-tight">
+                          {p ? (
+                            <span className="text-[12px] font-semibold text-muted tnum inline-flex items-center justify-center gap-0.5">
+                              {st.done && arrow !== 'none' && <Icon n={arrow === 'up' ? 'arrowUp' : arrow === 'down' ? 'arrowDown' : 'equal'} size={12} stroke={3} className={arrow === 'up' ? 'text-ok' : arrow === 'down' ? 'text-miss' : 'text-muted'} />}
+                              {kgFmt(p.load)}×{p.reps}
+                            </span>
+                          ) : <span className="text-muted">–</span>}
+                        </div>
+                        {cur.unit === 'seg' && !st.done ? (
+                          <button className={`btn !min-h-11 !w-11 !px-0 !rounded-full ${counting ? 'btn-primary' : 'btn-soft'}`} onClick={() => { unlockAudio(); setCount(counting ? null : { setId: st.id, end: Date.now() + (st.reps ?? 30) * 1000 }) }} aria-label={counting ? 'Parar contagem' : 'Iniciar contagem regressiva da série'}>
+                            {counting ? <span className="tnum text-sm">{Math.max(0, Math.ceil(((count?.end ?? 0) - now) / 1000))}</span> : <Icon n="play" size={16} />}
+                          </button>
+                        ) : (
+                          <button className={`btn !min-h-11 !w-11 !px-0 !rounded-full ${st.done ? '!bg-ok !text-white !border-transparent' : ''}`} onClick={() => doToggle(st)} aria-pressed={st.done} aria-label={st.done ? `Desmarcar série ${i + 1}` : `Concluir série ${i + 1}`}><Icon n="check" size={20} stroke={3} /></button>
+                        )}
                       </div>
-                      {cur.unit === 'seg' && !st.done ? (
-                        <button className={`btn !min-h-12 !px-0 ${counting ? 'btn-primary' : 'btn-soft'}`} onClick={() => { unlockAudio(); setCount(counting ? null : { setId: st.id, end: Date.now() + (st.reps ?? 30) * 1000 }) }} aria-label={counting ? 'Parar contagem' : 'Iniciar contagem regressiva da série'}>
-                          {counting ? <span className="tnum text-sm">{Math.max(0, Math.ceil(((count?.end ?? 0) - now) / 1000))}</span> : <Icon n="play" size={18} />}
-                        </button>
-                      ) : (
-                        <button className={`btn !min-h-12 !px-0 ${st.done ? '!bg-ok !text-white !border-transparent' : ''}`} onClick={() => doToggle(st)} aria-pressed={st.done} aria-label={st.done ? `Desmarcar série ${i + 1}` : `Concluir série ${i + 1}`}><Icon n="check" size={22} stroke={3} /></button>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-              <div className="flex gap-2 mt-3">
-                <button className="btn btn-sm flex-1" onClick={() => addSet(cur.id)}><Icon n="plus" size={16} />Série extra</button>
-                <button className="btn btn-sm flex-1" disabled={curSets.length <= 1} onClick={() => removeSet(curSets[curSets.length - 1].id)}><Icon n="minus" size={16} />Remover série</button>
+                    )
+                  })}
+                </div>
+                <div className="flex items-center justify-between mt-3">
+                  <button className="text-[13px] font-bold text-accentink inline-flex items-center gap-1" onClick={() => addSet(cur.id)}><Icon n="plus" size={15} />Série extra</button>
+                  <button className="text-[13px] font-bold text-muted inline-flex items-center gap-1 disabled:opacity-40" disabled={curSets.length <= 1} onClick={() => removeSet(curSets[curSets.length - 1].id)}><Icon n="minus" size={15} />Remover série</button>
+                </div>
               </div>
             </div>
 
-            <div className="flex gap-2">
-              {cur.status === 'skipped'
-                ? <button className="btn flex-1" onClick={() => unskipExercise(cur.id)}><Icon n="repeat" />Retomar exercício</button>
-                : <button className="btn flex-1" onClick={() => skipExercise(cur.id)}><Icon n="skip" />Pular</button>}
-              <button className="btn flex-1" disabled={idx >= ex.length - 1} onClick={() => setCurrent(s.id, idx + 1)}>Próximo<Icon n="chevR" /></button>
-            </div>
+            {comp.tone !== 'none' && (
+              <p className={`rounded-2xl px-4 py-3 text-sm font-bold flex items-start gap-2 ${comp.tone === 'up' ? 'bg-[color-mix(in_srgb,var(--ok)_14%,transparent)] text-ok' : comp.tone === 'down' ? 'bg-[color-mix(in_srgb,var(--miss)_14%,transparent)] text-miss' : comp.tone === 'mixed' ? 'bg-[color-mix(in_srgb,var(--plan)_14%,transparent)] text-plan' : 'bg-surface2 text-muted'}`}>
+                <Icon n={comp.tone === 'up' ? 'arrowUp' : comp.tone === 'down' ? 'arrowDown' : comp.tone === 'mixed' ? 'swap' : 'equal'} size={16} className="mt-0.5 shrink-0" />{comp.message}
+              </p>
+            )}
           </section>
         )}
-
-        {allDone && (
-          <div className="card p-5 text-center space-y-3 border-ok">
-            <div className="w-12 h-12 mx-auto rounded-2xl bg-[color-mix(in_srgb,var(--ok)_16%,transparent)] text-ok grid place-items-center"><Icon n="trophy" size={26} /></div>
-            <b className="text-lg block">Todos os exercícios concluídos!</b>
-            <button className="btn btn-primary w-full" onClick={() => setFinishAsk(true)}><Icon n="flag" />Finalizar treino</button>
-          </div>
-        )}
       </div>
+
+      {/* ação principal fixa (some enquanto descansa) */}
+      {!resting && ex.length > 0 && cur && (
+        <div className="fixed left-0 right-0 bottom-0 z-40 bg-bg/95 backdrop-blur border-t border-line p-3 safe-b">
+          <div className="max-w-3xl mx-auto grid grid-cols-[auto_1fr] gap-2">
+            {cur.status === 'skipped'
+              ? <button className="btn !min-h-14" onClick={() => unskipExercise(cur.id)}><Icon n="repeat" />Retomar</button>
+              : <button className="btn !min-h-14" disabled={allDone} onClick={() => skipExercise(cur.id)}><Icon n="skip" />Pular</button>}
+            {allDone ? (
+              <button className="btn btn-primary !min-h-14 text-base" onClick={() => setFinishAsk(true)}><Icon n="flag" />Finalizar treino</button>
+            ) : nextSet ? (
+              <button className="btn btn-primary !min-h-14 text-base" onClick={() => doToggle(nextSet)}><Icon n="check" stroke={3} />Concluir série {curSets.indexOf(nextSet) + 1}</button>
+            ) : idx < ex.length - 1 ? (
+              <button className="btn btn-primary !min-h-14 text-base" onClick={() => setCurrent(s.id, idx + 1)}>Próximo exercício<Icon n="chevR" /></button>
+            ) : (
+              <button className="btn btn-primary !min-h-14 text-base" onClick={() => setFinishAsk(true)}><Icon n="flag" />Finalizar treino</button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* descanso */}
       {resting && (
