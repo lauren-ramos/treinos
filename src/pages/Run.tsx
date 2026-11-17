@@ -84,6 +84,26 @@ export default function Run() {
   }) : undefined
   const curSets = useMemo(() => sets.filter((x) => cur && x.session_exercise_id === cur.id), [sets, cur])
   const nextSet = curSets.find((x) => !x.done)
+  const stripRef = useRef<HTMLDivElement>(null)
+  const touch = useRef<{ x: number; y: number } | null>(null)
+  const swipeStart = (e: React.TouchEvent) => {
+    if ((e.target as HTMLElement).closest('dialog,[role=tablist]')) { touch.current = null; return }
+    touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+  }
+  // arrastar para o lado troca de exercício (esquerda = próximo, direita = anterior)
+  const swipeEnd = (e: React.TouchEvent) => {
+    const t = touch.current
+    touch.current = null
+    if (!t || !s) return
+    const dx = e.changedTouches[0].clientX - t.x
+    const dy = e.changedTouches[0].clientY - t.y
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return
+    const next = dx < 0 ? idx + 1 : idx - 1
+    if (next >= 0 && next < ex.length) void setCurrent(s.id, next)
+  }
+  useEffect(() => {
+    stripRef.current?.querySelector('[data-active=true]')?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' })
+  }, [idx])
 
   // referência da última execução
   useEffect(() => {
@@ -183,7 +203,7 @@ export default function Run() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 pt-4 space-y-4">
+      <div className="max-w-3xl mx-auto px-4 pt-4 space-y-4" onTouchStart={swipeStart} onTouchEnd={swipeEnd}>
         {!ex.length && (
           <div className="card p-8 text-center space-y-3">
             <b className="text-lg">Treino livre</b>
@@ -193,15 +213,15 @@ export default function Run() {
         )}
 
         {ex.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-1" role="tablist" aria-label="Exercícios do treino">
+          <div ref={stripRef} className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 py-1" role="tablist" aria-label="Exercícios do treino (arraste a tela para o lado para trocar)">
             {ex.map((e, i) => (
-              <button key={e.id} role="tab" aria-selected={i === idx} onClick={() => setCurrent(s.id, i)}
-                className={`shrink-0 rounded-2xl px-3 py-2 text-left max-w-[170px] border transition ${i === idx ? 'bg-accent text-onaccent border-transparent shadow-md' : e.status === 'done' ? 'bg-[color-mix(in_srgb,var(--ok)_16%,transparent)] border-transparent' : e.status === 'skipped' ? 'bg-surface2 opacity-60 border-transparent' : 'bg-surface border-line'}`}>
-                <span className="flex items-center gap-1.5 text-[11px] font-bold opacity-80">{e.status === 'done' ? <Icon n="check" size={13} /> : e.status === 'skipped' ? <Icon n="skip" size={12} /> : null}{i + 1}{e.group_id ? ' · série combinada' : ''}</span>
-                <span className="block text-[13px] font-bold leading-tight truncate">{e.name}</span>
+              <button key={e.id} role="tab" aria-selected={i === idx} aria-label={`Exercício ${i + 1}: ${e.name}${e.status === 'done' ? ' (concluído)' : e.status === 'skipped' ? ' (pulado)' : ''}`}
+                data-active={i === idx} onClick={() => setCurrent(s.id, i)}
+                className={`shrink-0 grid place-items-center rounded-full font-extrabold tnum transition-all ${i === idx ? 'w-11 h-11 bg-accent text-onaccent shadow-md text-base' : e.status === 'done' ? 'w-9 h-9 bg-ok text-white text-sm' : e.status === 'skipped' ? 'w-9 h-9 bg-surface2 text-muted text-sm line-through' : 'w-9 h-9 bg-surface border border-line text-muted text-sm'}`}>
+                {e.status === 'done' && i !== idx ? <Icon n="check" size={16} stroke={3} /> : i + 1}
               </button>
             ))}
-            <button className="shrink-0 rounded-2xl px-3 py-2 border border-dashed border-line text-muted font-bold text-[13px] flex items-center gap-1" onClick={() => setPicker('add')}><Icon n="plus" size={16} />Exercício</button>
+            <button className="shrink-0 w-9 h-9 rounded-full grid place-items-center border border-dashed border-line text-muted" onClick={() => setPicker('add')} aria-label="Adicionar exercício"><Icon n="plus" size={16} /></button>
           </div>
         )}
 
