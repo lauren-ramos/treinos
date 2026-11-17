@@ -48,7 +48,8 @@ const isNetworkError = (e: unknown) => {
 function toRemote(t: SyncTable, r: Row, uid: string): Record<string, unknown> {
   const { _d, ...rest } = r as Row & Record<string, unknown>
   void _d
-  return { ...rest, id: t === 'profiles' ? uid : r.id, user_id: uid }
+  // todo registro vai com `deleted` explícito: em envio em lote, campos ausentes viravam NULL no servidor
+  return { ...rest, deleted: r.deleted === true, id: t === 'profiles' ? uid : r.id, user_id: uid }
 }
 
 async function push(uid: string) {
@@ -57,7 +58,7 @@ async function push(uid: string) {
     for (;;) {
       const rows = await table.where('_d').equals(1).limit(BATCH).toArray()
       if (!rows.length) break
-      const { error } = await supabase!.from(t).upsert(rows.map((r) => toRemote(t, r, uid)), { onConflict: 'id' })
+      const { error } = await supabase!.from(t).upsert(rows.map((r) => toRemote(t, r, uid)), { onConflict: 'id', defaultToNull: false })
       if (error) throw error
       // só limpa a marca se a linha não foi alterada de novo durante o envio
       await db.transaction('rw', table, async () => {

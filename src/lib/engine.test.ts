@@ -228,6 +228,7 @@ vi.mock('./supabase', () => {
       upsert: async (rows: Row[]) => {
         if (!online) return { error: new TypeError('Failed to fetch') }
         upsertCalls++
+        if (rows.some((r) => r.deleted === undefined || r.deleted === null)) return { error: new Error('null value in column "deleted"') } // como o banco real
         const tbl = (server[t] ??= new Map())
         for (const r of rows) {
           const old = tbl.get(r.id)
