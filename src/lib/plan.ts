@@ -137,5 +137,7 @@ export async function copyWeek(fromDate: string, toDate: string, skipFilled = tr
 }
 
 export async function listTemplates(): Promise<PlannedWorkout[]> {
-  return (await db.planned_workouts.toArray()).filter((w) => w.template && !w.deleted)
+  const order = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta']
+  const rank = (n: string) => { const i = order.findIndex((d) => n.startsWith(d)); return i < 0 ? 99 : i }
+  return (await db.planned_workouts.toArray()).filter((w) => w.template && !w.deleted).sort((a, b) => rank(a.name) - rank(b.name) || a.name.localeCompare(b.name))
 }

@@ -195,8 +195,8 @@ export async function toggleSet(setId: string): Promise<{ restStarted: boolean }
   if (next >= 0 && next !== s.current_index) patch.current_index = next
   const finished = list.every((e) => e.status !== 'pending')
   let restStarted = false
-  if (startRestNow && prof.auto_rest && !finished) {
-    const secs = restSeconds > 0 ? restSeconds : prof.default_rest
+  if (startRestNow && prof.auto_rest && !finished && restSeconds > 0) {
+    const secs = restSeconds
     patch.rest_total_s = secs
     patch.rest_label = ex.name
     if (s.paused_at === null) patch.rest_end_at = Date.now() + secs * 1000

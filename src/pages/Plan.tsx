@@ -12,6 +12,7 @@ import {
   moveWorkout, removeItem, reorderItems, replaceItem, statusOf, updateItem, type DayStatus,
 } from '../lib/plan'
 import { startSession } from '../lib/session'
+import { applyDefaultWeek } from '../lib/seed'
 import { findIn, useCatalog, type Ex } from '../lib/catalog'
 import { LIB_BY_ID } from '../data/library'
 import type { PlannedItem, PlannedWorkout, Session, Video } from '../lib/types'
@@ -94,6 +95,10 @@ export default function Plan() {
           toast(n ? `${n} treino${n > 1 ? 's' : ''} copiado${n > 1 ? 's' : ''} da semana anterior.` : 'A semana anterior não tem treinos para copiar (ou os dias já estão preenchidos).', n ? 'ok' : 'info')
         }}><Icon n="copy" size={16} />Copiar semana anterior</button>
         <button className="btn btn-sm" onClick={() => setDateAsk({ mode: 'copyweek' })}><Icon n="calendar" size={16} />Copiar de outra semana</button>
+        <button className="btn btn-sm btn-soft" onClick={async () => {
+          const n = await applyDefaultWeek(anchor)
+          toast(n ? `${n} treino${n > 1 ? 's' : ''} padrão aplicado${n > 1 ? 's' : ''} (segunda a sexta).` : 'Os dias de segunda a sexta já têm treino. Use "Modelo" em um dia livre para escolher.', n ? 'ok' : 'info')
+        }}><Icon n="layers" size={16} />Aplicar treinos padrão (seg–sex)</button>
         <button className="btn btn-sm" onClick={() => setVideoFor('new')}><Icon n="video" size={16} />Importar de vídeo</button>
       </div>
 

@@ -9,6 +9,7 @@ import { ConfirmProvider, Spinner, ToastProvider } from './components/ui'
 import { AuthProvider, useAuth } from './lib/auth'
 import { db } from './lib/db'
 import { startSync } from './lib/sync'
+import { seedDefaultWorkouts } from './lib/seed'
 import Login from './pages/Login'
 
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -39,6 +40,8 @@ function ThemeSync() {
 function Gate() {
   const { ready, user, configured, localMode } = useAuth()
   useEffect(() => { startSync() }, [])
+  const canSeed = ready && (!configured || !!user || localMode)
+  useEffect(() => { if (canSeed) void seedDefaultWorkouts() }, [canSeed, user?.id])
   if (!ready) return <Spinner />
   if (configured && !user && !localMode) return <Login />
   return (
