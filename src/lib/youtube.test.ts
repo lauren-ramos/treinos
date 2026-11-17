@@ -15,7 +15,9 @@ describe('extração de exercícios do vídeo', () => {
     expect(r.map((x) => x.exercise_id)).toEqual(['cadeira-abdutora', 'hip-thrust', 'afundo', 'bom-dia', 'sumo', 'coice-polia'])
     expect(r[0].start).toBe(142)
     expect(r.find((x) => x.exercise_id === 'coice-polia')).toMatchObject({ sets: 3, reps: '15', start: 1724 })
-    expect(r.find((x) => x.exercise_id === 'sumo')).toMatchObject({ sets: null, start: 1529 })
+    expect(r.find((x) => x.exercise_id === 'sumo')).toMatchObject({ sets: 3, reps: '12-15', start: 1529 }) // séries sugeridas pela biblioteca; reps citadas no vídeo
+    expect(r.find((x) => x.exercise_id === 'sumo')?.note).toContain('séries')
+    expect(r.find((x) => x.exercise_id === 'cadeira-abdutora')?.sets).toBe(3) // 'primeira', 'segunda', 'terceira' série
   })
   it('não inventa: texto sem exercícios conhecidos devolve vazio', () => {
     expect(extractExercises('[0:10] Olá pessoal, bem-vindos ao canal')).toEqual([])

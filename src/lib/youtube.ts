@@ -121,6 +121,8 @@ function findDose(ctx: string): { sets: number | null; reps: string } | null {
   if (a) return { sets: +a[1], reps: a[2] }
   const b = t.match(/(\d{1,2})\s*x\s*(\d{1,3})/)
   if (b) return { sets: +b[1], reps: b[2] }
+  const r = t.match(/(\d{1,3})\s*(?:a|-|ate)\s*(\d{1,3})\s*(?:repeticoes|repeticao|reps|vezes)/)
+  if (r) return { sets: null, reps: `${r[1]}-${r[2]}` }
   const c = t.match(/(\d{1,3})\s*(?:repeticoes|repeticao|reps|vezes)/)
   if (c) return { sets: null, reps: c[1] }
   return null
@@ -142,6 +144,7 @@ export function extractExercises(transcript: string): VideoExercise[] {
   })
   const seen = new Set<string>()
   const out: VideoExercise[] = []
+  const hitIdx = flat.map((l, i) => (l.hits.length ? i : -1)).filter((i) => i >= 0)
   for (const [i, l] of flat.entries()) {
     for (const h of l.hits) {
       if (seen.has(h.ex.id)) continue
@@ -152,7 +155,19 @@ export function extractExercises(transcript: string): VideoExercise[] {
         ctx += ' ' + flat[j].text
         dose = findDose(ctx)
       }
-      out.push({ name: h.ex.name, exercise_id: h.ex.id, start: l.start, sets: dose?.sets ?? null, reps: dose?.reps ?? '', note: '', selected: true })
+      // séries citadas como "primeira série", "segunda série"… dentro do trecho deste exercício
+      const next = hitIdx.find((k) => k > i) ?? flat.length
+      const seg = flat.slice(i, Math.min(next, i + 40)).map((x) => x.text).join(' ')
+      const ord = [...seg.matchAll(/(primeira|segunda|terceira|quarta|quinta)\s+series?/g)].map((m) => ({ primeira: 1, segunda: 2, terceira: 3, quarta: 4, quinta: 5 })[m[1] as 'primeira'])
+      const spoken = dose?.sets ?? (ord.length ? Math.max(...ord) : null)
+      const reps = dose?.reps || ''
+      // todo exercício importado vem com séries: o que o vídeo disse; senão a sugestão da biblioteca (avisada na observação)
+      const fallbackSets = spoken === null
+      const fallbackReps = !reps
+      out.push({
+        name: h.ex.name, exercise_id: h.ex.id, start: l.start, sets: spoken ?? h.ex.sets, reps: reps || h.ex.reps, selected: true,
+        note: fallbackSets || fallbackReps ? `${fallbackSets ? 'séries' : ''}${fallbackSets && fallbackReps ? ' e repetições' : fallbackReps ? 'repetições' : ''} sugeridas pela biblioteca (não ditas no vídeo)` : '',
+      })
     }
   }
   return out
