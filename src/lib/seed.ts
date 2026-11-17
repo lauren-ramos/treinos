@@ -3,7 +3,7 @@ import { uid } from './id'
 import { DEFAULT_WORKOUTS } from '../data/defaultWorkouts'
 import { LIB_EX } from './catalog'
 import { addDays, weekStart } from './dates'
-import { duplicateWorkout, workoutsOn } from './plan'
+import { deleteWorkout, duplicateWorkout, workoutsOn } from './plan'
 import type { PlannedItem, PlannedWorkout } from './types'
 
 const SEED_FLAG = 'seed:default-workouts:v1'
@@ -61,16 +61,29 @@ export async function seedDefaultWorkouts(): Promise<void> {
   await setMeta(SEED_FLAG, true)
 }
 
-/** Aplica os treinos padrão (segunda a sexta) na semana de `anchor`, sem mexer em dias que já têm treino. */
-export async function applyDefaultWeek(anchor: string): Promise<number> {
+/** Quantos dias de segunda a sexta da semana de `anchor` já têm treino planejado. */
+export async function occupiedDefaultDays(anchor: string): Promise<number> {
+  const start = weekStart(anchor)
+  let n = 0
+  for (const w of DEFAULT_WORKOUTS) if ((await workoutsOn(addDays(start, w.dow - 1))).some((x) => !x.cancelled)) n++
+  return n
+}
+
+/**
+ * Aplica os treinos padrão (segunda a sexta) na semana de `anchor`.
+ * Com `replace`, os treinos já planejados desses dias são excluídos antes (treinos já realizados ficam intactos no histórico).
+ */
+export async function applyDefaultWeek(anchor: string, replace = false): Promise<number> {
   await seedDefaultWorkouts()
   const start = weekStart(anchor)
   let n = 0
   for (const w of DEFAULT_WORKOUTS) {
     const date = addDays(start, w.dow - 1)
-    if ((await workoutsOn(date)).some((x) => !x.cancelled)) continue
+    const existing = (await workoutsOn(date)).filter((x) => !x.cancelled)
+    if (existing.length && !replace) continue
     const tpl = await db.planned_workouts.get(await defaultTemplateId(w.key))
     if (!tpl || tpl.deleted) continue
+    for (const e of existing) await deleteWorkout(e.id)
     await duplicateWorkout(tpl.id, date)
     n++
   }

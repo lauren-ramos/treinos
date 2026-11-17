@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { db, wipeAll } from './db'
 import { DEFAULT_WORKOUTS } from '../data/defaultWorkouts'
 import { LIB_BY_ID } from '../data/library'
-import { applyDefaultWeek, seedDefaultWorkouts } from './seed'
+import { applyDefaultWeek, occupiedDefaultDays, seedDefaultWorkouts } from './seed'
 import { itemsOf, listTemplates, workoutsOn } from './plan'
 
 beforeEach(async () => { await wipeAll() })
@@ -32,9 +32,21 @@ describe('treinos padrão (segunda a sexta)', () => {
     expect((await workoutsOn('2026-11-20'))[0].name).toContain('Sexta')
     expect(await workoutsOn('2026-11-21')).toHaveLength(0)
     expect(await applyDefaultWeek('2026-11-17')).toBe(0)
+    expect(await occupiedDefaultDays('2026-11-17')).toBe(5)
     const ter = (await workoutsOn('2026-11-17'))[0]
     const items = await itemsOf(ter.id)
     expect(items.filter((i) => i.group_id).length).toBe(3) // combinação de ombros
     expect(items.every((i) => i.sets > 0 && i.reps)).toBe(true)
+  })
+
+  it('com substituição, troca os treinos planejados dos dias ocupados e não duplica', async () => {
+    await applyDefaultWeek('2026-11-17')
+    const antes = (await workoutsOn('2026-11-17'))[0].id
+    expect(await applyDefaultWeek('2026-11-17', true)).toBe(5)
+    const ter = await workoutsOn('2026-11-17')
+    expect(ter).toHaveLength(1)
+    expect(ter[0].id).not.toBe(antes)
+    expect(ter[0].name).toContain('Terça')
+    expect((await itemsOf(ter[0].id)).length).toBeGreaterThan(5)
   })
 })
