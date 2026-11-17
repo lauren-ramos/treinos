@@ -27,7 +27,7 @@ export function ExVisual({ ex, controls = true, className = '' }: { ex: Ex; cont
           <Icon n="dumbbell" size={28} />
         </div>
         <b className="block mt-2">{ex.name}</b>
-        <span className="text-xs text-muted">Exercício personalizado: sem animação disponível.{steps.length ? ' Veja os passos abaixo.' : ''}</span>
+        <span className="text-xs text-muted">{ex.lib ? 'Sem animação para este exercício: siga o passo a passo abaixo.' : `Exercício personalizado: sem animação disponível.${steps.length ? ' Veja os passos abaixo.' : ''}`}</span>
       </div>
     </div>
   )

@@ -34,7 +34,10 @@ export async function getSessionExercises(sessionId: string, includeRemoved = fa
 }
 
 export async function getSessionSets(sessionId: string): Promise<SessionSet[]> {
-  return alive(await db.session_sets.where('session_id').equals(sessionId).toArray()).sort((a, b) => a.set_index - b.set_index)
+  const pos = new Map((await db.session_exercises.where('session_id').equals(sessionId).toArray()).map((e) => [e.id, e.position]))
+  return alive(await db.session_sets.where('session_id').equals(sessionId).toArray()).sort(
+    (a, b) => (pos.get(a.session_exercise_id) ?? 0) - (pos.get(b.session_exercise_id) ?? 0) || a.set_index - b.set_index,
+  )
 }
 
 /* ---------------- criação ---------------- */

@@ -72,6 +72,11 @@ export const POSES: Record<string, Demo> = {
     { plant: 96, torso: 62, neck: -35, arm: [-12, -12], leg: [18, 6] },
     [BB('wrist', 8)],
   ),
+  'bom-dia': side(
+    { plant: 96, torso: 3, arm: squatArms, leg: [4, 2] },
+    { plant: 96, torso: 68, neck: -30, arm: squatArms, leg: [18, 6] },
+    [{ k: 'plate', at: 'shoulder', r: 9, dx: -2 }],
+  ),
   terra: side(
     { plant: 96, torso: 50, neck: -30, arm: [0, 0], leg: [78, -28] },
     { plant: 96, torso: 0, arm: [0, 0], leg: [0, 0] },

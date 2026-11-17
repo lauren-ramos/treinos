@@ -44,49 +44,71 @@ export async function fetchTranscript(id: string): Promise<TranscriptResult> {
 
 const fmt = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`
 
-/** Converte "[m:ss]" ou "m:ss" ao início da linha em segundos. */
+/** Primeiro tempo da linha, em segundos: "[1:25]", "01:45", "[02:22](…?t=142s)" ou "t=105s". */
 function lineStart(line: string): number | null {
-  const m = line.match(/^\s*\[?(?:(\d+):)?(\d{1,2}):(\d{2})\]?/)
-  if (!m) return null
-  return (m[1] ? parseInt(m[1], 10) * 3600 : 0) + parseInt(m[2], 10) * 60 + parseInt(m[3], 10)
+  const m = line.match(/(?:^|[^\d])(?:(\d{1,2}):)?(\d{1,2}):(\d{2})(?!\d)/)
+  if (m) return (m[1] ? parseInt(m[1], 10) * 3600 : 0) + parseInt(m[2], 10) * 60 + parseInt(m[3], 10)
+  const t = line.match(/[?&]t=(\d+)s?/)
+  return t ? parseInt(t[1], 10) : null
 }
 
 function escapeRe(s: string) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') }
 
+/** Remove marcação (links, listas, negrito) e tempos, deixando só o texto falado. */
+function cleanLine(l: string): string {
+  return norm(
+    l.replace(/\[([^\]]*)\]\([^)]*\)/g, ' ') // [01:45](link) -> some
+      .replace(/^\s*(?:[-*•]\s+|\d+[.)]\s+)/, '')
+      .replace(/^\s*\[?[\d:]+\]?\s*/, '')
+      .replace(/[*_`#>]/g, ''),
+  )
+}
+
+const NAMES = LIBRARY.map((ex) => ({ ex, names: [ex.name, ...ex.aliases].map(norm).sort((a, b) => b.length - a.length) }))
+
+/** Exercícios citados numa linha. Quando um nome contém outro (ex.: "agachamento sumô" e "agachamento"), vale o mais específico. */
+function matchLine(text: string): { ex: (typeof LIBRARY)[number]; len: number }[] {
+  const out: { ex: (typeof LIBRARY)[number]; len: number }[] = []
+  for (const { ex, names } of NAMES) {
+    for (const n of names) {
+      if (new RegExp(`(^|[^a-z0-9])${escapeRe(n)}(s|es)?([^a-z0-9]|$)`).test(text)) { out.push({ ex, len: n.length }); break }
+    }
+  }
+  const max = Math.max(0, ...out.map((o) => o.len))
+  return out.filter((o) => o.len === max)
+}
+
 /**
  * Identifica exercícios da biblioteca mencionados na transcrição (por nome ou apelido), na ordem em que aparecem.
- * Procura séries/repetições citadas perto da menção. Só reconhece o que realmente aparece no texto.
+ * Procura séries/repetições citadas na própria linha (ou na seguinte, se ela não citar outro exercício).
+ * Só reconhece o que realmente aparece no texto: não inventa nada.
  */
 export function extractExercises(transcript: string): VideoExercise[] {
   const lines = transcript.split(/\r?\n/).filter((l) => l.trim())
-  const hits: { idx: number; ex: (typeof LIBRARY)[number]; start: number | null; ctx: string }[] = []
-  let lastStart: number | null = null
-  const flat: { text: string; start: number | null }[] = lines.map((l) => {
-    const s = lineStart(l)
-    if (s !== null) lastStart = s
-    return { text: norm(l.replace(/^\s*\[?[\d:]+\]?\s*/, '')), start: s ?? lastStart }
+  let last: number | null = null
+  const flat = lines.map((raw) => {
+    const s = lineStart(raw)
+    if (s !== null) last = s
+    const text = cleanLine(raw)
+    return { text, start: s ?? last, hits: matchLine(text) }
   })
   const seen = new Set<string>()
+  const out: VideoExercise[] = []
   for (const [i, l] of flat.entries()) {
-    for (const ex of LIBRARY) {
-      if (seen.has(ex.id)) continue
-      const names = [ex.name, ...ex.aliases].map(norm).sort((a, b) => b.length - a.length)
-      const found = names.find((n) => new RegExp(`(^|[^a-z0-9])${escapeRe(n)}(s|es)?([^a-z0-9]|$)`).test(l.text))
-      if (found) {
-        seen.add(ex.id)
-        hits.push({ idx: i, ex, start: l.start, ctx: flat.slice(i, i + 3).map((x) => x.text).join(' ') })
-      }
-    }
-  }
-  return hits
-    .sort((a, b) => a.idx - b.idx)
-    .map((h) => {
+    for (const h of l.hits) {
+      if (seen.has(h.ex.id)) continue
+      seen.add(h.ex.id)
+      let ctx = l.text
+      const nx = flat[i + 1]
+      if (nx && !nx.hits.length && !/\d/.test(l.text)) ctx += ' ' + nx.text
       let sets: number | null = null
       let reps = ''
-      const a = h.ctx.match(/(\d{1,2})\s*(?:series|serie)\s*(?:de|com)?\s*(\d{1,3})/)
-      const b = h.ctx.match(/(\d{1,2})\s*x\s*(\d{1,3})/)
-      const c = h.ctx.match(/(\d{1,3})\s*(?:repeticoes|repeticao|reps|vezes)/)
+      const a = ctx.match(/(\d{1,2})\s*(?:series|serie)\s*(?:de|com)?\s*(\d{1,3})/)
+      const b = ctx.match(/(\d{1,2})\s*x\s*(\d{1,3})/)
+      const c = ctx.match(/(\d{1,3})\s*(?:repeticoes|repeticao|reps|vezes)/)
       if (a) { sets = +a[1]; reps = a[2] } else if (b) { sets = +b[1]; reps = b[2] } else if (c) reps = c[1]
-      return { name: h.ex.name, exercise_id: h.ex.id, start: h.start, sets, reps, note: '', selected: true }
-    })
+      out.push({ name: h.ex.name, exercise_id: h.ex.id, start: l.start, sets, reps, note: '', selected: true })
+    }
+  }
+  return out
 }

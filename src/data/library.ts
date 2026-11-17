@@ -84,7 +84,7 @@ export const LIBRARY: LibExercise[] = [
     cautions: ['Nunca solte as mãos da trava de segurança ao terminar sem antes travar a máquina.', 'Se a lombar descolar do encosto, reduza a profundidade.'],
   }),
   mk({
-    id: 'afundo', name: 'Afundo (passada estática) com halteres', aliases: ['afundo', 'passada', 'avanço', 'lunge', 'lunges', 'split squat', 'agachamento afundo', 'passada estática'],
+    id: 'afundo', name: 'Afundo (passada estática) com halteres', aliases: ['afundo', 'passada', 'avanço', 'lunge', 'lunges', 'split squat', 'agachamento afundo', 'passada estática', 'agachamento ao fundo', 'passada com halteres'],
     group: 'Quadríceps', secondary: ['Glúteos', 'Posteriores'],
     description: 'Um pé à frente e outro atrás; você sobe e desce em linha reta. Trabalha cada perna separadamente.',
     equipment: ['Halteres (opcional)'], sets: 3, reps: '10-12 por perna', rest: 75, difficulty: 'intermediario', location: ['casa', 'academia'], loadable: true,
@@ -204,7 +204,7 @@ export const LIBRARY: LibExercise[] = [
     cautions: ['Se sentir mais a lombar do que o glúteo, diminua a altura.'],
   }),
   mk({
-    id: 'coice-polia', name: 'Coice de glúteo na polia', aliases: ['coice na polia', 'coice de glúteo', 'glúteo na polia', 'cable kickback', 'one legged cable kickback', 'kickback glúteo'],
+    id: 'coice-polia', name: 'Coice de glúteo na polia', aliases: ['coice na polia', 'coice de glúteo', 'glúteo na polia', 'cable kickback', 'one legged cable kickback', 'kickback glúteo', 'kickback', 'coice', 'coice de perna na polia'],
     group: 'Glúteos', secondary: ['Posteriores'],
     description: 'Estenda a perna para trás contra a resistência da polia. Isola o glúteo.',
     equipment: ['Polia baixa', 'Tornozeleira'], sets: 3, reps: '12-15 por perna', rest: 60, difficulty: 'intermediario', location: ['academia'], loadable: true,
@@ -216,7 +216,7 @@ export const LIBRARY: LibExercise[] = [
     cautions: ['Use carga que permita controle total.'],
   }),
   mk({
-    id: 'abducao-pe', name: 'Abdução de perna em pé', aliases: ['abdução de quadril', 'abdução em pé', 'elevação lateral de perna', 'abdutora', 'cadeira abdutora', 'thigh abductor', 'abdução de perna'],
+    id: 'abducao-pe', name: 'Abdução de perna em pé', aliases: ['abdução de quadril', 'abdução em pé', 'elevação lateral de perna', 'abdução de perna'],
     group: 'Glúteos', secondary: ['Abdômen'],
     description: 'Levante a perna para o lado. Trabalha a lateral dos glúteos e ajuda na estabilidade do quadril.',
     equipment: ['Tornozeleira (opcional)', 'Parede ou apoio (opcional)'], sets: 3, reps: '15 por perna', rest: 45, difficulty: 'iniciante', location: ['casa', 'academia'], loadable: false,
@@ -466,6 +466,30 @@ export const LIBRARY: LibExercise[] = [
     mistakes: ['Inclinar o tronco para trás.', 'Aterrissar com o calcanhar.', 'Prender a respiração.'],
     tips: ['Versão suave: marche no lugar sem saltar.'],
     cautions: ['Se sentir dor nos joelhos, faça a versão sem impacto.'],
+  }),
+  mk({
+    id: 'cadeira-abdutora', name: 'Cadeira abdutora', aliases: ['cadeira abdutora', 'abdutora', 'thigh abductor', 'máquina abdutora', 'abdução na máquina'],
+    group: 'Glúteos', secondary: ['Quadríceps'], demo: '',
+    description: 'Sentada na máquina, abra as pernas contra a resistência. Trabalha a lateral dos glúteos (glúteo médio).',
+    equipment: ['Máquina abdutora'], sets: 3, reps: '15-20', rest: 60, difficulty: 'iniciante', location: ['academia'], loadable: true,
+    start: 'Sentada com as costas bem apoiadas no encosto e os pés nos apoios. Almofadas na parte externa dos joelhos, pernas juntas.',
+    steps: ['Contraia o abdômen e mantenha o quadril colado ao assento.', 'Abra as pernas contra a resistência, até onde conseguir sem descolar as costas.', 'Aperte os glúteos por um segundo com as pernas abertas.', 'Volte devagar, controlando a carga, sem deixar as anilhas baterem.'],
+    breathing: 'Expire ao abrir as pernas, inspire ao fechar.',
+    mistakes: ['Usar impulso para abrir.', 'Descolar as costas do encosto.', 'Fechar rápido e deixar o peso cair.'],
+    tips: ['Incline levemente o tronco à frente para sentir mais o glúteo.', 'Uma série final com redução de carga (drop set) é comum nesse exercício.'],
+    cautions: ['Se sentir desconforto no quadril, reduza a carga e a abertura.'],
+  }),
+  mk({
+    id: 'bom-dia', name: 'Bom dia (good morning)', aliases: ['bom dia', 'bom dia na máquina', 'good morning', 'bom-dia', 'flexão de tronco'],
+    group: 'Posteriores', secondary: ['Glúteos', 'Costas'],
+    description: 'Incline o tronco à frente com a coluna reta, levando o quadril para trás. Trabalha posterior da coxa, glúteos e lombar.',
+    equipment: ['Barra, halter ou máquina'], sets: 3, reps: '12-15', rest: 75, difficulty: 'intermediario', location: ['academia', 'casa'], loadable: true,
+    start: 'Em pé, pés na largura do quadril, joelhos levemente dobrados. Barra apoiada nas costas (ou mãos atrás da cabeça, sem peso).',
+    steps: ['Contraia o abdômen e mantenha a coluna reta.', 'Empurre o quadril para trás e incline o tronco à frente, como quem fecha uma porta com o glúteo.', 'Desça até sentir a parte de trás da coxa alongar, sem arredondar as costas.', 'Volte à posição inicial empurrando o quadril para frente e apertando os glúteos.'],
+    breathing: 'Inspire ao descer, expire ao subir.',
+    mistakes: ['Arredondar as costas.', 'Dobrar demais os joelhos (vira agachamento).', 'Descer além do ponto em que a coluna se mantém reta.'],
+    tips: ['Comece sem carga para aprender o movimento de dobrar no quadril.', 'Olhe para um ponto à frente no chão, sem encolher o pescoço.'],
+    cautions: ['Use carga leve: a lombar trabalha bastante. Dor aguda na lombar: pare.'],
   }),
 ]
 
