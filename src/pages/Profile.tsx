@@ -47,6 +47,7 @@ export default function Profile() {
   if (!p || !d.ready) return <Spinner />
   const set = (patch: Parameters<typeof saveProfile>[0]) => saveProfile(patch)
   const unlocked = new Set(d.achievements.map((a) => a.key))
+  const unlockedCount = unlocked.size
   const goals = d.goals.map((x) => goalProgress(x, d))
 
   async function toggleNotif() {
@@ -87,15 +88,22 @@ export default function Profile() {
     <div className="space-y-5">
       <PageHeader eyebrow="Perfil" title="Você e suas preferências" />
 
-      <div className="card p-5 flex items-center gap-4">
-        <button className="relative w-20 h-20 rounded-3xl overflow-hidden bg-accentsoft text-accentink grid place-items-center shrink-0" onClick={() => fileRef.current?.click()} aria-label="Trocar foto">
-          {p.photo ? <img src={p.photo} alt="Sua foto" className="w-full h-full object-cover" /> : <Icon n="user" size={34} />}
-          <span className="absolute bottom-0 right-0 bg-accent text-onaccent rounded-tl-xl p-1"><Icon n="camera" size={14} /></span>
-        </button>
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { await set({ photo: await resizePhoto(f) }) } catch { toast('Não foi possível usar essa imagem.', 'err') } } }} />
-        <div className="flex-1 min-w-0 space-y-2">
-          <Field label="Nome"><input className="input" defaultValue={p.name} onBlur={(e) => set({ name: e.target.value.trim() })} placeholder="Como quer ser chamado(a)" /></Field>
-          {p.photo && <button className="text-xs font-bold text-danger" onClick={() => set({ photo: '' })}>Remover foto</button>}
+      <div className="hero p-5">
+        <div className="flex items-center gap-4 relative z-10">
+          <button className="relative w-20 h-20 rounded-3xl overflow-hidden bg-white/25 grid place-items-center shrink-0 ring-4 ring-white/30" onClick={() => fileRef.current?.click()} aria-label="Trocar foto">
+            {p.photo ? <img src={p.photo} alt="Sua foto" className="w-full h-full object-cover" /> : <Icon n="user" size={34} />}
+            <span className="absolute bottom-0 right-0 bg-white text-[#a4246a] rounded-tl-xl p-1"><Icon n="camera" size={14} /></span>
+          </button>
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { await set({ photo: await resizePhoto(f) }) } catch { toast('Não foi possível usar essa imagem.', 'err') } } }} />
+          <div className="min-w-0 flex-1">
+            <div className="text-[11px] font-extrabold tracking-[.14em] opacity-90">SEU PERFIL</div>
+            <div className="text-2xl font-extrabold leading-7 truncate">{p.name || 'Sem nome'}</div>
+            <div className="text-[13px] opacity-90 mt-0.5">{d.sessions.length} treino{d.sessions.length === 1 ? '' : 's'} · {unlockedCount} conquista{unlockedCount === 1 ? '' : 's'}</div>
+          </div>
+        </div>
+        <div className="mt-4 relative z-10">
+          <input className="input !bg-white/20 !border-white/30 !text-inherit placeholder:!text-white/70" defaultValue={p.name} onBlur={(e) => set({ name: e.target.value.trim() })} placeholder="Como quer ser chamado(a)" aria-label="Nome" />
+          {p.photo && <button className="text-xs font-bold mt-2 underline" onClick={() => set({ photo: '' })}>Remover foto</button>}
         </div>
       </div>
 

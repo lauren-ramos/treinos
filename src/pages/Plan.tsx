@@ -121,10 +121,9 @@ export default function Plan() {
           return (
             <section key={day} aria-label={`${DIAS[dd.getDay()]}, ${fmtShort(day)}`}>
               <div className="flex items-center justify-between mb-2 px-1">
-                <div className="flex items-center gap-2">
-                  <b className="text-[17px]">{DIAS[dd.getDay()]}</b>
-                  <span className="text-sm text-muted tnum">{fmtShort(day)}</span>
-                  {day === today && <span className="chip on">Hoje</span>}
+                <div className="flex items-center gap-3">
+                  <span className={`w-11 h-11 rounded-2xl grid place-items-center font-extrabold text-lg tnum ${day === today ? 'bg-accent text-onaccent shadow-md' : 'bg-surface2 text-fg'}`}>{dd.getDate()}</span>
+                  <div className="leading-tight"><b className="text-[17px] block">{DIAS[dd.getDay()]}</b><span className="text-xs text-muted">{day === today ? 'Hoje' : ws.length ? `${ws.length} treino${ws.length > 1 ? 's' : ''}` : 'Livre'}</span></div>
                 </div>
                 <div className="flex gap-1.5">
                   {!!templates?.length && <button className="btn btn-sm" onClick={() => setTplDay(day)}><Icon n="layers" size={15} />Modelo</button>}
@@ -132,7 +131,7 @@ export default function Plan() {
                 </div>
               </div>
               {ws.length === 0 ? (
-                <div className="card-flat px-4 py-3 text-sm text-muted flex items-center gap-2"><Icon n="moon" size={16} />Dia livre — sem treino planejado.</div>
+                <div className="rounded-2xl border border-dashed border-line px-4 py-3 text-sm text-muted flex items-center gap-2"><Icon n="moon" size={16} />Dia livre — sem treino planejado.</div>
               ) : (
                 <div className="space-y-3">
                   {ws.map((w) => (
@@ -220,14 +219,14 @@ function WorkoutCard({ w, items, sessions, open, onToggle, onAdd, onVideo, onRep
   void groups
 
   return (
-    <article className={`card ${w.cancelled ? 'opacity-70' : ''}`}>
+    <article className={`card overflow-hidden border-l-[5px] ${w.location === 'casa' ? '!border-l-plan' : '!border-l-accent'} ${w.cancelled ? 'opacity-70' : ''}`}>
       <button className="w-full text-left p-4 flex items-center gap-3" onClick={onToggle} aria-expanded={open}>
         <div className="w-11 h-11 rounded-2xl bg-accentsoft text-accentink grid place-items-center shrink-0"><Icon n={w.location === 'casa' ? 'home' : 'dumbbell'} /></div>
         <div className="min-w-0 flex-1">
-          <b className="block text-[16px] leading-tight truncate">{w.name}</b>
-          <span className="text-xs text-muted">{w.kind || 'Treino'} · {w.location === 'casa' ? 'Em casa' : 'Academia'} · {items.length} exercício{items.length === 1 ? '' : 's'}</span>
+          <b className="block text-[16px] leading-[20px] line-clamp-2">{w.name}</b>
+          <span className="text-xs text-muted block mt-0.5">{w.kind || 'Treino'} · {w.location === 'casa' ? 'Em casa' : 'Academia'} · {items.length} exercício{items.length === 1 ? '' : 's'}</span>
+          <span className={`chip mt-1.5 ${STATUS_TONE[status]}`}>{STATUS_LABEL[status]}</span>
         </div>
-        <span className={`chip ${STATUS_TONE[status]}`}>{STATUS_LABEL[status]}</span>
         <Icon n={open ? 'chevU' : 'chevD'} className="text-muted" />
       </button>
 

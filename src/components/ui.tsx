@@ -201,7 +201,7 @@ export function PageHeader({ eyebrow, title, right, sub }: { eyebrow?: string; t
     <div className="flex items-end justify-between gap-3 mb-5">
       <div className="min-w-0">
         {eyebrow && <div className="h-eyebrow mb-1">{eyebrow}</div>}
-        <h1 className="text-[28px] leading-8 font-extrabold tracking-tight">{title}</h1>
+        <h1 className="text-[30px] leading-[34px] font-extrabold tracking-tight">{title}</h1>
         {sub && <p className="text-sm text-muted mt-1">{sub}</p>}
       </div>
       {right && <div className="shrink-0 flex gap-2">{right}</div>}

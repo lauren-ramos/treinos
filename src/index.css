@@ -69,16 +69,18 @@
   --color-miss: var(--miss);
   --color-none: var(--none);
   --color-danger: var(--danger);
-  --font-sans: 'Inter', 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 html, body, #root { height: 100%; }
+body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(900px 420px at 50% -150px, color-mix(in srgb, var(--accent) 17%, transparent), transparent 70%); }
 body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.005em;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
 }
@@ -89,7 +91,13 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .safe-t { padding-top: max(0px, env(safe-area-inset-top)); }
 
 /* ---------- componentes ---------- */
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: 22px; box-shadow: var(--shadow); }
+.card { background: var(--surface); border: 1px solid color-mix(in srgb, var(--border) 70%, transparent); border-radius: 26px; box-shadow: var(--shadow); }
+.hero { position: relative; overflow: hidden; border-radius: 30px; color: var(--on-accent); background: linear-gradient(140deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #6d2150)); box-shadow: 0 18px 40px color-mix(in srgb, var(--accent) 32%, transparent); }
+.hero::after { content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.28), transparent 70%); pointer-events: none; }
+.tile-ic { width: 38px; height: 38px; border-radius: 13px; display: grid; place-items: center; }
+.avatar-stack > * { margin-left: -12px; border: 3px solid var(--surface); }
+.avatar-stack > *:first-child { margin-left: 0; }
+.floatnav { box-shadow: 0 10px 40px rgba(40, 10, 30, .22), 0 0 0 1px color-mix(in srgb, var(--border) 80%, transparent); }
 .card-flat { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;

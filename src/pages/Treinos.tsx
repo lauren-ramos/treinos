@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Empty, Field, Icon, Modal, PageHeader, useConfirm, useToast } from '../components/ui'
 import { ExThumb, ExerciseDetail, ExerciseForm, LOC_LABEL, MuscleTag, DIFF_LABEL, useDeleteCustom } from '../components/exercise'
-import { GROUPS } from '../data/library'
+import { GROUPS, GROUP_COLOR } from '../data/library'
+import { POSES } from '../data/poses'
+import { StaticFigure } from '../components/Figure'
 import { useCatalog, type Ex } from '../lib/catalog'
 import { db, alive, put } from '../lib/db'
 import { addExercise, createWorkout, deleteWorkout, duplicateWorkout, itemsOf, listTemplates, workoutsOn } from '../lib/plan'
@@ -68,21 +70,26 @@ function Library() {
       </div>
 
       {list.length === 0 ? <Empty icon="search" title="Nada encontrado" text="Tente outro termo ou limpe os filtros. Você também pode criar um exercício personalizado." /> : (
-        <div className="grid sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {list.map((e) => (
-            <div key={e.id} className="card-flat p-3 flex gap-3 items-center">
-              <button className="flex gap-3 items-center flex-1 min-w-0 text-left" onClick={() => setDetail(e)} aria-label={`Abrir ${e.name}`}>
-                <ExThumb ex={e} size={72} />
-                <span className="min-w-0">
-                  <b className="block leading-tight">{e.name}</b>
-                  <span className="text-xs text-muted block mt-0.5"><MuscleTag g={e.group} /> · {DIFF_LABEL[e.difficulty]}</span>
-                  <span className="text-xs text-muted block">{e.location.map((l) => LOC_LABEL[l]).join(' e ')}{e.custom ? ' · seu exercício' : ''}</span>
-                </span>
+            <div key={e.id} className="card-flat overflow-hidden relative active:scale-[.98] transition">
+              <button className="block w-full text-left" onClick={() => setDetail(e)} aria-label={`Abrir ${e.name}`}>
+                <div className="aspect-[4/3] grid place-items-center" style={{ background: `linear-gradient(160deg, color-mix(in srgb, ${GROUP_COLOR[e.group] ?? 'var(--accent)'} 14%, var(--surface)), var(--accent-soft))` }}>
+                  {e.demo && POSES[e.demo] ? <StaticFigure demo={POSES[e.demo]} group={e.group} className="w-[88%] h-[88%]" /> : <Icon n="dumbbell" size={34} className="text-accentink" />}
+                </div>
+                <div className="p-3">
+                  <b className="block text-[14px] leading-[18px] line-clamp-2 min-h-9">{e.name}</b>
+                  <span className="mt-1.5 flex items-center justify-between gap-1 text-[11.5px] text-muted font-semibold">
+                    <MuscleTag g={e.group} />
+                    <span>{e.sets}×{e.reps}</span>
+                  </span>
+                </div>
               </button>
+              <span className={`absolute top-2 left-2 rounded-full px-2 py-0.5 text-[10px] font-extrabold ${e.difficulty === 'iniciante' ? 'bg-ok text-white' : e.difficulty === 'intermediario' ? 'bg-miss text-white' : 'bg-danger text-white'}`}>{DIFF_LABEL[e.difficulty]}</span>
               {e.custom && (
-                <div className="flex flex-col gap-1">
-                  <button className="btn btn-icon !w-9 !min-h-9" aria-label="Editar" onClick={() => setForm({ open: true, editing: custom!.find((c) => c.id === e.id) ?? null })}><Icon n="edit" size={16} /></button>
-                  <button className="btn btn-icon !w-9 !min-h-9" aria-label="Excluir" onClick={() => del(custom!.find((c) => c.id === e.id)!)}><Icon n="trash" size={16} /></button>
+                <div className="absolute top-2 right-2 flex gap-1">
+                  <button className="btn btn-icon !w-8 !min-h-8 !rounded-lg" aria-label="Editar" onClick={() => setForm({ open: true, editing: custom!.find((c) => c.id === e.id) ?? null })}><Icon n="edit" size={14} /></button>
+                  <button className="btn btn-icon !w-8 !min-h-8 !rounded-lg" aria-label="Excluir" onClick={() => del(custom!.find((c) => c.id === e.id)!)}><Icon n="trash" size={14} /></button>
                 </div>
               )}
             </div>

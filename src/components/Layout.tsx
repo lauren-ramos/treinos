@@ -64,24 +64,24 @@ export default function Layout() {
           <div className="flex items-center gap-2"><div className="w-8 h-8 rounded-lg bg-accent text-onaccent grid place-items-center"><Icon n="dumbbell" size={18} /></div><b className="font-extrabold tracking-tight">Meu Treino</b></div>
           <SyncBadge />
         </header>
-        <main className="max-w-5xl mx-auto px-4 md:px-8 pt-5 pb-36 md:pb-12 page-in" key={loc.pathname}>
+        <main className="max-w-5xl mx-auto px-4 md:px-8 pt-5 pb-40 md:pb-12 page-in" key={loc.pathname}>
           <Outlet />
         </main>
       </div>
 
       {active && loc.pathname !== '/' && !loc.pathname.startsWith('/treino/') && (
-        <button onClick={() => nav(`/treino/${active.id}`)} className="fixed z-40 left-3 right-3 bottom-[76px] md:left-auto md:right-6 md:bottom-6 md:w-80 rounded-2xl bg-accent text-onaccent px-4 py-3 flex items-center gap-3 shadow-xl text-left" aria-label="Voltar ao treino em andamento">
+        <button onClick={() => nav(`/treino/${active.id}`)} className="fixed z-40 left-3 right-3 bottom-[92px] md:left-auto md:right-6 md:bottom-6 md:w-80 rounded-2xl bg-accent text-onaccent px-4 py-3 flex items-center gap-3 shadow-xl text-left" aria-label="Voltar ao treino em andamento">
           <Icon n={active.status === 'paused' ? 'pause' : 'play'} />
           <span className="flex-1 min-w-0"><b className="block text-sm leading-tight truncate">{active.name}</b><span className="text-xs opacity-90 tnum">{active.status === 'paused' ? 'Pausado' : 'Em andamento'} · {fmtDur(elapsedMs(active, now) / 1000)}</span></span>
           <Icon n="chevR" />
         </button>
       )}
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur border-t border-line safe-b" aria-label="Navegação principal">
-        <div className="grid grid-cols-6">
+      <nav className="md:hidden fixed left-3 right-3 bottom-3 z-40 rounded-[28px] bg-surface/92 backdrop-blur-xl floatnav" style={{ marginBottom: 'env(safe-area-inset-bottom)' }} aria-label="Navegação principal">
+        <div className="grid grid-cols-6 px-1.5 py-1.5">
           {NAV.map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.to === '/'} className={({ isActive }) => `flex flex-col items-center gap-0.5 py-2 text-[10.5px] font-bold ${isActive ? 'text-accentink' : 'text-muted'}`}>
-              {({ isActive }) => (<><span className={`px-3.5 py-1 rounded-full transition ${isActive ? 'bg-accentsoft' : ''}`}><Icon n={n.icon} size={21} /></span>{n.label === 'Planejamento' ? 'Plano' : n.label}</>)}
+            <NavLink key={n.to} to={n.to} end={n.to === '/'} className={({ isActive }) => `flex flex-col items-center gap-0.5 py-1.5 rounded-2xl text-[10px] font-bold transition ${isActive ? 'bg-accent text-onaccent shadow-md' : 'text-muted'}`}>
+              <Icon n={n.icon} size={20} />{n.label === 'Planejamento' ? 'Plano' : n.label}
             </NavLink>
           ))}
         </div>
