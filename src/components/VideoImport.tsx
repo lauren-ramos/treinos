@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Field, Icon, Modal, Spinner, useToast } from './ui'
 import { db, alive, put } from '../lib/db'
-import { extractExercises, fetchTitle, fetchTranscript, parseVideoId } from '../lib/youtube'
+import { extractExercises, fetchTitle, fetchTranscript, normalizeTranscript, parseVideoId } from '../lib/youtube'
 import { findIn, useCatalog, type Ex } from '../lib/catalog'
 import { uid } from '../lib/id'
 import type { Video, VideoExercise } from '../lib/types'
@@ -87,7 +87,7 @@ export function VideoImport({ open, onClose, onAdd }: { open: boolean; onClose: 
             <Field label="Transcrição (editável)" hint="Uma linha por trecho. Pode começar com o tempo, como [1:25]. Edite à vontade antes de identificar os exercícios.">
               <textarea className="textarea !min-h-40 font-mono text-[13px]" value={v.transcript} onChange={(e) => patch({ transcript: e.target.value })} placeholder="Cole aqui a transcrição, se não foi possível obtê-la automaticamente." />
             </Field>
-            <button className="btn btn-soft" onClick={() => { const ex = extractExercises(v.transcript); patch({ exercises: ex }); if (!ex.length) toast('Nenhum exercício conhecido foi encontrado na transcrição.', 'info') }}><Icon n="search" />Identificar exercícios</button>
+            <button className="btn btn-soft" onClick={() => { const tr = normalizeTranscript(v.transcript); const ex = extractExercises(tr); patch({ transcript: tr, transcript_status: v.transcript_status === 'ok' ? 'ok' : 'manual', exercises: ex }); if (!ex.length) toast('Nenhum exercício conhecido foi encontrado na transcrição.', 'info') }}><Icon n="search" />Identificar exercícios</button>
 
             <div>
               <div className="flex items-center justify-between mb-2"><span className="label !m-0">Exercícios identificados ({v.exercises.length})</span>

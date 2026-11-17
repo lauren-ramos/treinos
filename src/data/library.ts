@@ -120,7 +120,7 @@ export const LIBRARY: LibExercise[] = [
     cautions: ['Evite carga muito alta: a articulação do joelho sofre mais nesse exercício isolado.'],
   }),
   mk({
-    id: 'sumo', name: 'Agachamento sumô com halter', aliases: ['agachamento sumô', 'sumô', 'sumo squat', 'agachamento sumo', 'agachamento pliê', 'plie'],
+    id: 'sumo', name: 'Agachamento sumô com halter', aliases: ['agachamento sumô', 'agachamento sum', 'sumô', 'sumo squat', 'agachamento sumo', 'agachamento pliê', 'plie'],
     group: 'Glúteos', secondary: ['Quadríceps', 'Posteriores'],
     description: 'Agachamento com os pés bem afastados. Trabalha glúteos e parte interna das coxas.',
     equipment: ['Halter ou kettlebell'], sets: 3, reps: '12-15', rest: 75, difficulty: 'iniciante', location: ['academia', 'casa'], loadable: true,
@@ -204,7 +204,7 @@ export const LIBRARY: LibExercise[] = [
     cautions: ['Se sentir mais a lombar do que o glúteo, diminua a altura.'],
   }),
   mk({
-    id: 'coice-polia', name: 'Coice de glúteo na polia', aliases: ['coice na polia', 'coice de glúteo', 'glúteo na polia', 'cable kickback', 'one legged cable kickback', 'kickback glúteo', 'kickback', 'coice', 'coice de perna na polia'],
+    id: 'coice-polia', name: 'Coice de glúteo na polia', aliases: ['coice na polia', 'coice de glúteo', 'glúteo na polia', 'cable kickback', 'one legged cable kickback', 'kickback glúteo', 'kickback', 'kicks', 'coice', 'coice de perna na polia'],
     group: 'Glúteos', secondary: ['Posteriores'],
     description: 'Estenda a perna para trás contra a resistência da polia. Isola o glúteo.',
     equipment: ['Polia baixa', 'Tornozeleira'], sets: 3, reps: '12-15 por perna', rest: 60, difficulty: 'intermediario', location: ['academia'], loadable: true,
